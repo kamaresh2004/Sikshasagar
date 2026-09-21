@@ -1,97 +1,107 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Siksha Sagar Preschool — Mobile App
 
-# Getting Started
+**Android & iOS** app for Management, Teacher, and Parent logins, built with **React Native CLI** (bare, no Expo).
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+> Theme: *ocean of learning* — deep teal + warm coral, playful but professional.
 
-## Step 1: Start Metro
+---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Quick start
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Requirements: **Node 22+, Android Studio + SDK, Java 17+** (or Xcode on macOS).
 
-```sh
-# Using npm
-npm start
+```bash
+npm install
 
-# OR using Yarn
-yarn start
-```
-
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+# Android (emulator or device running)
 npm run android
 
-# OR using Yarn
-yarn android
+# iOS (macOS only, pods first)
+cd ios && bundle install && pod install   # also needs: npm run ios
+
+# Other checks
+npm run lint          # ESLint
+npm run typecheck     # TypeScript
+npm test              # Jest
 ```
 
-### iOS
+The debug APK is built at `android/app/build/outputs/apk/debug/app-debug.apk` via `cd android && ./gradlew assembleDebug`.
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+---
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Demo accounts
 
-```sh
-bundle install
+All logins use the same password: **`demo1234`**
+
+| Role        | Email                         |
+| ----------- | ----------------------------- |
+| Management  | `management@sikshasagar.in`    |
+| Teacher     | `teacher@sikshasagar.in`      |
+| Parent      | `parent@sikshasagar.in`       |
+
+Authentication is a **Zustand store persisted to AsyncStorage**; it validates against bundled demo users (see `src/constants/mock.ts`). The app routes each role to its own dashboard and rejects unknown credentials.
+
+---
+
+## What's built (all three roles)
+
+**Shared** — Login, Forgot Password, Notifications feed, Profile & Settings, AI Chatbot.
+
+**Management** — Dashboard (enquiries, attendance %, approvals, students), Students list + profile, Teachers list, Enquiries with **AI-suggested replies**, Announcements, Gallery approval queue, Fee overview, Attendance reports with class/status filters.
+
+**Teacher** — Home (my class, quick stats), Mark Attendance (present/absent/leave toggle), Daily Activity Log (create + feed), Homework & Notes, Performance notes per student, Events, Upload Photos (emojis → approval pipeline).
+
+**Parent** — Home (children switcher, today's activities), Gallery (class-wise approved albums), School Calendar, Child Profile, Attendance history, Performance timeline, Daily activities, Contact school (call/WhatsApp/email), AI Assistant chat, Parent Rewards preview.
+
+Navigation = **React Navigation 7** (`native-stack` root + role-conditional bottom tabs).
+
+---
+
+## Project structure
+
+```
+src/
+  components/
+    brand/        # Logo, demo-account picker
+    shared/       # Greeting header, activity/announcement cards, quick actions
+    ui/           # Button, Card, Field, Header, Screen, Avatar, Badge, StatCard,
+                  # ListItem, SearchBar, EmptyState, SectionTitle
+  constants/      # theme (colors/spacing/radius), types, mock data
+  navigation/     # auth stack, root stack, role tabs, param lists
+  screens/
+    auth/         # login, forgot password
+    management/   # dashboard, students, teachers, enquiries, approvals, fees, reports
+    teacher/      # home, attendance, activities, homework, performance, events, upload
+    parent/       # home, gallery, calendar, child profile, contact, chatbot
+    shared/       # notifications, profile
+  services/api.ts # API client — mirrors the backend spec (see below)
+  store/auth.ts   # Zustand auth store (login/logout, persisted token)
 ```
 
-Then, and every time you update your native dependencies, run:
+`src/services/api.ts` is the **single swap point** for the real backend — every screen already calls `api.*` with the same signatures an Express REST API will expose. It currently resolves from in-app mock data and simulates latency.
 
-```sh
-bundle exec pod install
-```
+---
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## Still to do (developer handoff)
 
-```sh
-# Using npm
-npm run ios
+The UI is a fully-runnable, professional demo with realistic mock data. Before production you still need:
 
-# OR using Yarn
-yarn ios
-```
+1. **Backend API** (Node/Express + MongoDB) — implement the endpoint groups in `src/services/api.ts`:
+   `POST /auth/login`, `users`, `students`, `attendance`, `performance`, `activities`, `homework`,
+   `gallery/upload` + `gallery/:id/approve`, `announcements`, `notifications`, `enquiries`, `ai/chatbot`.
+   Swap each `api.*` body from mock → `fetch(API_BASE_URL + path, { headers: Authorization: Bearer <token> })`.
+2. **Real auth** — replace the demo login with JWT from the server; keep role-based gate + RBAC on every route (server-side).
+3. **Media storage** — wire teacher photo upload to Cloudflare R2 / Firebase Storage with signed, expiring URLs (replace the emoji placeholders with real `<Image>` sources).
+4. **Push notifications** — FCM tokens per user; send on attendance, activity, announcement, gallery approval.
+5. **AI features** — OpenAI/Anthropic behind `/ai/chatbot` (currently a scripted reply), smart enquiry auto-replies, photo auto-tagging, blog suggestions (admin web panel).
+6. **Achievements** — parent reward points logic (points → redeemable perks).
+7. **Branding & release** — replace app icon/splash art, set bundle IDs (`com.sikshasagar` on Android is already set), sign release keystore, then Play Store + App Store via the release builds.
+8. **Test accounts** — teacher/parent users created from real DB, not the bundled demo list.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+iOS specifics: `pod install` on macOS, Apple IDs / provisioning for device testing.
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+---
 
-## Step 3: Modify your app
+## Build output (Android)
 
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- Debug APK: `android/app/build/outputs/apk/debug/app-debug.apk`

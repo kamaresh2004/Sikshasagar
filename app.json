@@ -1,4 +1,36 @@
 {
-  "name": "SikshaSagar",
-  "displayName": "SikshaSagar"
+  "expo": {
+    "name": "Siksha Sagar",
+    "slug": "sikshasagar",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0B5563"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sikshasagar.app"
+    },
+    "android": {
+      "package": "com.sikshasagar",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0B5563"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-status-bar",
+      ["expo-notifications", { "color": "#0A5D6E" }]
+    ]
+  }
 }
