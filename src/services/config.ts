@@ -9,8 +9,15 @@ import Constants from 'expo-constants';
  * QR with Expo Go on the same phone/emulator or an external device.
  */
 const API_PORT = 4000;
+const productionApiUrl = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, '');
 
 export function resolveApiBaseUrl(): string {
+  // Expo replaces EXPO_PUBLIC_* variables at web-build time. Render supplies
+  // this value for the hosted frontend so browsers never try localhost.
+  if (productionApiUrl) {
+    return productionApiUrl.endsWith('/api') ? productionApiUrl : `${productionApiUrl}/api`;
+  }
+
   try {
     const host = Constants.expoConfig?.hostUri ?? null;
     if (host) {
