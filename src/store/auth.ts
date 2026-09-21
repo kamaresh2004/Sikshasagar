@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { DEMO_PASSWORD } from '@/constants/mock';
+import { DEMO_PASSWORD, DEMO_USERS } from '@/constants/mock';
 import { Role, User } from '@/constants/types';
 import { API_BASE_URL } from '@/services/config';
 
@@ -70,6 +70,16 @@ export const useAuthStore = create<AuthState>()(
           password,
         });
         if (!res.ok || !res.data) {
+          // Keep the published demo usable before its optional backend seed has
+          // been run. This only accepts the three credentials displayed on the
+          // login screen; it never grants access to a real API account.
+          const demoUser = DEMO_USERS.find(
+            user => user.email.toLowerCase() === email.trim().toLowerCase(),
+          );
+          if (demoUser && password === DEMO_PASSWORD) {
+            set({ user: demoUser, token: null });
+            return { ok: true, role: demoUser.role };
+          }
           return {
             ok: false,
             error: res.error ?? 'Invalid credentials. Try one of the demo accounts below.',
